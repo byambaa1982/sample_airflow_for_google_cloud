@@ -26,7 +26,13 @@ with airflow.DAG(
         schedule_interval=datetime.timedelta(days=1)) as dag:
 
     # Print the dag_run id from the Airflow logs
-    print_dag_run_conf = bash_operator.BashOperator(
-        task_id='print_dag_run_conf', bash_command='echo {{ dag_run.id }}')
+    t1 = bash_operator.BashOperator(
+        task_id='print_dag_run_conf', 
+        bash_command='echo {{ dag_run.id }}')
 
-    
+    t2 = bash_operator.BashOperator(
+        task_id='quote_job', 
+        bash_command=f"{directory_change} scrapy crawl quote")
+
+    t1>>t2
+
