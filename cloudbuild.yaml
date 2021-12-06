@@ -1,19 +1,25 @@
 steps:
-- name: ubuntu
-  args: ['bash', '-c', "echo '$COMMIT_SHA' > REVISION.txt"]
-- name: gcr.io/cloud-builders/gsutil
+###########################################################
+# Step 0: Pull image if exists
+###########################################################
+- name: 'gcr.io/cloud-builders/docker'
+  entrypoint: 'bash'
   args:
-    - '-m'
-    - 'rsync'
-    - '-d'
-    - '-r'
-    - 'dags'
-    - 'gs://${_GCS_BUCKET}/dags'
-- name: gcr.io/cloud-builders/gsutil
+  - '-c'
+  - |
+    docker pull gcr.io/$PROJECT_ID/cloud-composer-examples:latest || exit 0
+###########################################################
+# Step 1: Create a Docker image with Python installed
+###########################################################
+- name: 'gcr.io/cloud-builders/docker'
   args:
-    - '-m'
-    - 'rsync'
-    - '-d'
-    - '-r'
-    - 'plugins'
-    - 'gs://${_GCS_BUCKET}/plugins'
+    - 'build'
+    - '--tag=gcr.io/$PROJECT_ID/cloud-composer-examples:latest'
+    - '--cache-from=gcr.io/$PROJECT_ID/cloud-composer-examples:latest'
+    - '.'
+###########################################################
+# Step 2: Run unit tests
+###########################################################
+- name: 'gcr.io/$PROJECT_ID/cloud-composer-examples'
+  entrypoint: 'bash'
+  args: ["./run_tests.sh"]
