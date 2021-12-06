@@ -32,7 +32,7 @@ with airflow.DAG(
 
     t2 = bash_operator.BashOperator(
         task_id='quote_job', 
-        bash_command=f"{directory_change} scrapy crawl quote")
+        bash_command='echo {{ it is just a test }}')
 
     t1>>t2
 
